@@ -10,7 +10,7 @@ import kotlin.experimental.and
 
 object Log {
     var LOG = false
-    val FILE_LOG: File? = null
+    var FILE_LOG: File? = null
     private const val LF = "\n"
     private const val MAX_LOG_LINE_BYTE_SIZE = 3600
     private const val PREFIX = "``"
