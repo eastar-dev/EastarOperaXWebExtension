@@ -55,8 +55,6 @@ class OperaXRequest {
     }
 
     companion object {
-        private val DEFAULT_EXTENSION_PACKAGE = OperaX::class.java.`package`!!.name
-
         private const val CALLBACK = "callback"
         private const val CLAZZ = "clazz"
         private const val METHOD = "method"
@@ -67,11 +65,9 @@ class OperaXRequest {
         fun errorInstance(json: String): OperaXRequest {
             return OperaXRequest().apply {
                 this.json = json
-                this.callback = try {
+                this.callback = runCatching {
                     JSONObject(json).optString(CALLBACK, DEFAULT_CALLBACK)
-                } catch (e: JSONException) {
-                    DEFAULT_CALLBACK
-                }
+                }.getOrDefault(DEFAULT_CALLBACK)
             }
         }
 
@@ -94,11 +90,13 @@ class OperaXRequest {
 
         @Suppress("UNCHECKED_CAST")
         private fun getClazz(clz: String): Class<out OperaX> {
-            return try {
-                Class.forName(clz) as Class<out OperaX>
-            } catch (e: ClassNotFoundException) {
-                Class.forName("$DEFAULT_EXTENSION_PACKAGE.$clz") as Class<out OperaX>
-            }
+            return runCatching {
+                Class.forName(clz)
+            }.recoverCatching {
+                Class.forName("${OperaX::class.java.`package`!!.name}.$clz")
+            }.recoverCatching {
+                Class.forName("opera.ext.$clz")
+            }.getOrThrow() as Class<out OperaX>
         }
 
         @Throws(JSONException::class)
