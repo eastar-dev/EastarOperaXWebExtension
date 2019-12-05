@@ -23,7 +23,7 @@ import android.content.Intent
 import android.os.Looper
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
-import dev.eastar.operaxwebextansion.Log.LOG
+import dev.eastar.operaxwebextansion.OperaXLog.LOG
 import java.util.*
 
 /**
@@ -40,8 +40,8 @@ object OperaXManager {
     @JvmStatic
     fun <R> execute(context: Context, json: String): R? = runCatching {
         if (LOG) {
-            Log.e("OPERA>>", json)
-            Log.flog("OPERA>>", json)
+            OperaXLog.e("OPERA>>", json)
+            OperaXLog.flog("OPERA>>", json)
         }
         OperaXRequest.newInstance(json).invoke(context) as? R
     }.getOrNull()
@@ -49,8 +49,8 @@ object OperaXManager {
     @JvmStatic
     fun execute(webView: WebView, json: String): Any? = runCatching {
         if (LOG) {
-            Log.e("OPERA>>", json)
-            Log.flog("OPERA>>", json)
+            OperaXLog.e("OPERA>>", json)
+            OperaXLog.flog("OPERA>>", json)
         }
         val req = OperaXRequest.newInstance(json)
         val result = req.invoke(webView)
@@ -94,8 +94,8 @@ object OperaXManager {
         if (LOG) {
             runCatching {
                 "\\((.*)\\)\\((.*)\\);".toRegex().matchEntire(script)?.run {
-                    Log.i("<<OPERA", groupValues[1], groupValues[2])
-                    Log.flog("<<OPERA", groupValues[1], groupValues[2])
+                    OperaXLog.i("<<OPERA", groupValues[1], groupValues[2])
+                    OperaXLog.flog("<<OPERA", groupValues[1], groupValues[2])
                 }
             }
         }
@@ -104,7 +104,7 @@ object OperaXManager {
     //RUNNING_EXTENSION/////////////////////////////////////////////////////////////////////////////////
     @JvmStatic
     fun addOperaXJavascriptInterface(webview: WebView, name: String) {
-        Log.e("addOperaXJavascriptInterface", name)
+        OperaXLog.e("addOperaXJavascriptInterface", name)
         webview.addJavascriptInterface(object : Any() {
             @JavascriptInterface
             fun execute(json: String): Any? = execute(webview, json)
