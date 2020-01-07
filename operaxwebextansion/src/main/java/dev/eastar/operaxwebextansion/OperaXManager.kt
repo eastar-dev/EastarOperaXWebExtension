@@ -119,7 +119,7 @@ object OperaXManager {
     }
 
     internal fun addRunningExtension(operaXItem: OperaX) {
-        RUNNING_EXTENSION[operaXItem.mReq.requestCode] = operaXItem
+        RUNNING_EXTENSION[operaXItem.req.requestCode] = operaXItem
     }
 
     private fun removeRunningExtension(requestCode: Int): OperaX? {

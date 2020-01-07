@@ -28,11 +28,11 @@ abstract class OperaX {
         private const val TAILFIX_CALLBACK = "C"
     }
 
-    protected lateinit var mContext: Context//for extension
-    protected lateinit var mActivity: AppCompatActivity//for extension
+    protected lateinit var context: Context//for extension
+    protected lateinit var activity: AppCompatActivity//for extension
     protected lateinit var webView: WebView//for extension
     ///////////
-    lateinit var mReq: OperaXRequest
+    lateinit var req: OperaXRequest
 
     @Target(AnnotationTarget.FUNCTION)
     @Retention(AnnotationRetention.RUNTIME)
@@ -45,10 +45,10 @@ abstract class OperaX {
     }
 
     open fun initialize(context: Context, req: OperaXRequest): OperaX {
-        mContext = context
+        this.context = context
         if (context is AppCompatActivity)
-            mActivity = context
-        this.mReq = req
+            activity = context
+        this.req = req
         return this
     }
 
@@ -60,18 +60,18 @@ abstract class OperaX {
     //////////////////////////////////////
     protected fun startActivityForResult(intent: Intent, requestCode: Int) {
         setRequestCode(requestCode)
-        mActivity.startActivityForResult(intent, requestCode)
+        activity.startActivityForResult(intent, requestCode)
     }
 
     protected fun setRequestCode(requestCode: Int) {
-        mReq.requestCode = requestCode
+        req.requestCode = requestCode
         OperaXManager.addRunningExtension(this)
     }
 
     ///////////////////////////////////////////////////////
     //Req
     open fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        val callbackMethodName = mReq.methodName + TAILFIX_CALLBACK
+        val callbackMethodName = req.methodName + TAILFIX_CALLBACK
 //        Log.i(callbackMethodName, requestCode, resultCode, data)
         try {
             val method = javaClass.getDeclaredMethod(callbackMethodName, Int::class.java, Int::class.java, Intent::class.java)
@@ -89,13 +89,13 @@ abstract class OperaX {
 
     protected fun sendOK(result: Any?) = sendResult(OperaXResponse.OK, result)
     protected fun sendFail(result: Any?) = sendResult(OperaXResponse.FAIL, result)
-    protected fun sendResult(resultCode: Int, result: Any?) = OperaXManager.sendJavascript(webView, OperaXResponse.getScript(mReq, resultCode, result))
-    protected fun sendResult(resultCode: OperaXResponse, result: Any?) = OperaXManager.sendJavascript(webView, OperaXResponse.getScript(mReq, resultCode.ordinal, result))
-    protected fun sendException(e: Exception) = OperaXManager.sendException(webView, mReq, e)
+    protected fun sendResult(resultCode: Int, result: Any?) = OperaXManager.sendJavascript(webView, OperaXResponse.getScript(req, resultCode, result))
+    protected fun sendResult(resultCode: OperaXResponse, result: Any?) = OperaXManager.sendJavascript(webView, OperaXResponse.getScript(req, resultCode.ordinal, result))
+    protected fun sendException(e: Exception) = OperaXManager.sendException(webView, req, e)
     @Suppress("UNUSED_PARAMETER")
     private fun sendOnActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         val res = if (Activity.RESULT_OK == resultCode) OperaXResponse.OK else OperaXResponse.FAIL
-        val script = res.getScript(mReq, data)
+        val script = res.getScript(req, data)
         OperaXManager.sendJavascript(webView, script)
     }
 }
