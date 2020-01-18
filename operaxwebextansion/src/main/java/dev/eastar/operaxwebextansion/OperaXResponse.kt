@@ -42,30 +42,25 @@ enum class OperaXResponse {
             return "(${req.callback})(${getResult(req, resultCode, result)});"
         }
 
-        private fun getResult(req: OperaXRequest, resultCode: Int, result: Any?): JSONObject {
+        private fun getResult(req: OperaXRequest, resultCode: Int, result: Any?) = runCatching {
             val jo = JSONObject()
-            try {
-                var response = result
-                if (result is Intent)
-                    response = intent2json(result)
+            var response = result
+            if (result is Intent)
+                response = intent2json(result)
 
-                jo.put("resultCode", resultCode)
+            jo.put("resultCode", resultCode)
 
-                if (resultCode == OK.ordinal)
-                    jo.put("result", response)
-                else
-                    jo.put("message", response)
+            if (resultCode == OK.ordinal)
+                jo.put("result", response)
+            else
+                jo.put("message", response)
 
-                try {
-                    jo.put("request", JSONObject(req.json))
-                } catch (e: Exception) {
-                    jo.put("request", req.toString())
-                }
-            } catch (e: JSONException) {
-                e.printStackTrace()
+            kotlin.runCatching {
+                jo.put("request", JSONObject(req.json))
+            }.getOrElse {
+                jo.put("request", req.toString())
             }
-            return jo
-        }
+        }.getOrDefault(JSONObject())
 
         private fun intent2json(data: Intent?): JSONObject {
             val result = JSONObject()
@@ -79,7 +74,6 @@ enum class OperaXResponse {
                     } catch (e: JSONException) {
                         e.printStackTrace()
                     }
-
                 }
             }
             return result

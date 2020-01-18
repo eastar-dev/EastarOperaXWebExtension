@@ -63,10 +63,8 @@ object OperaXManager {
         val script = res.getScript(req, result)
         sendJavascript(webView, script)
         return result
-    }.onFailure {
-        sendException(webView, OperaXRequest.errorInstance(json), it)
     }.getOrElse {
-        it.javaClass.simpleName + " : " + it.message
+        sendException(webView, OperaXRequest.errorInstance(json), it)
     }
 
     fun sendException(webView: WebView, req: OperaXRequest, e: Throwable) {
