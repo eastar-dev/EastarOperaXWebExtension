@@ -27,7 +27,7 @@ class OperaXRequest {
     lateinit var json: String
 
     lateinit var clazz: Class<out OperaX>
-    private lateinit var method: Method
+    lateinit var method: Method
     var returnType: Class<*>? = null
     lateinit var methodName: String
 

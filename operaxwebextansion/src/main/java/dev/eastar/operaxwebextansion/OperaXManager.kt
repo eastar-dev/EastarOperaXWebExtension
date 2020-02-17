@@ -24,6 +24,7 @@ import android.os.Looper
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import dev.eastar.operaxwebextansion.OperaXLog.LOG
+import org.json.JSONObject
 import java.util.*
 
 /**
@@ -40,7 +41,9 @@ object OperaXManager {
     @JvmStatic
     fun <R> execute(context: Context, json: String): R? = runCatching {
         if (LOG) {
-            OperaXLog.e("OPERA>>", json)
+            val req = OperaXRequest.newInstance(json)
+            if (req.clazz.getAnnotation(NoLog::class.java) == null && req.method.getAnnotation(NoLog::class.java) == null)
+                OperaXLog.e("OPERA>>", json)
             OperaXLog.flog("OPERA>>", json)
         }
         OperaXRequest.newInstance(json).invoke(context) as? R
@@ -49,7 +52,9 @@ object OperaXManager {
     @JvmStatic
     fun execute(webView: WebView, json: String): Any? = runCatching {
         if (LOG) {
-            OperaXLog.e("OPERA>>", json)
+            val req = OperaXRequest.newInstance(json)
+            if (req.clazz.getAnnotation(NoLog::class.java) == null && req.method.getAnnotation(NoLog::class.java) == null)
+                OperaXLog.e("OPERA>>", json)
             OperaXLog.flog("OPERA>>", json)
         }
         val req = OperaXRequest.newInstance(json)
@@ -92,7 +97,13 @@ object OperaXManager {
         if (LOG) {
             runCatching {
                 "\\((.*)\\)\\((.*)\\);".toRegex().matchEntire(script)?.run {
-                    OperaXLog.i("<<OPERA", groupValues[1], groupValues[2])
+                    val success = JSONObject(groupValues[2]).getInt("resultCode") == 0
+                    val reqJson = JSONObject(groupValues[2]).getString("request")
+                    val req = OperaXRequest.newInstance(reqJson)
+                    if (req.clazz.getAnnotation(NoLog::class.java) == null && req.method.getAnnotation(NoLog::class.java) == null) {
+                        if (success) OperaXLog.i("<<OPERA", groupValues[1], groupValues[2])
+                        else OperaXLog.w("<<OPERA", groupValues[1], groupValues[2])
+                    }
                     OperaXLog.flog("<<OPERA", groupValues[1], groupValues[2])
                 }
             }

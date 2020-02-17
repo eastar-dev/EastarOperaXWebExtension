@@ -21,6 +21,16 @@ object OperaXLog {
         println(android.util.Log.ERROR, msg)
     }
 
+    internal fun i(vararg args: Any?) {
+        val msg: String = makeMessage(*args)
+        println(android.util.Log.INFO, msg)
+    }
+
+    internal fun w(vararg args: Any?) {
+        val msg: String = makeMessage(*args)
+        println(android.util.Log.WARN, msg)
+    }
+
     internal fun flog(vararg args: Any?) {
         FILE_LOG ?: return
         runCatching {
@@ -39,11 +49,6 @@ object OperaXLog {
                 FILE_LOG!!.appendText(space + token + LF)
             }
         }
-    }
-
-    internal fun i(vararg args: Any?) {
-        val msg: String = makeMessage(*args)
-        println(android.util.Log.INFO, msg)
     }
 
     private fun println(priority: Int, msg: String?) {
@@ -104,5 +109,9 @@ object OperaXLog {
         }
         toString()
     }.getOrDefault(text)
-
 }
+
+@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
+@Retention(AnnotationRetention.RUNTIME)
+@MustBeDocumented
+annotation class NoLog
