@@ -100,10 +100,10 @@ object OperaXManager {
                     val success = JSONObject(groupValues[2]).getInt("resultCode") == 0
                     val reqJson = JSONObject(groupValues[2]).getString("request")
                     val req = OperaXRequest.newInstance(reqJson)
-                    if (req.clazz.getAnnotation(NoLog::class.java) == null && req.method.getAnnotation(NoLog::class.java) == null) {
-                        if (success) OperaXLog.i("<<OPERA", groupValues[1], groupValues[2])
-                        else OperaXLog.w("<<OPERA", groupValues[1], groupValues[2])
-                    }
+                    if (success && req.clazz.getAnnotation(NoLog::class.java) == null && req.method.getAnnotation(NoLog::class.java) == null)
+                        OperaXLog.i("<<OPERA", groupValues[1], groupValues[2])
+                    else
+                        OperaXLog.w("<<OPERA", groupValues[1], groupValues[2])
                     OperaXLog.flog("<<OPERA", groupValues[1], groupValues[2])
                 }
             }
