@@ -40,23 +40,13 @@ object OperaXManager {
     @Suppress("UNCHECKED_CAST")
     @JvmStatic
     fun <R> execute(context: Context, json: String): R? = runCatching {
-        if (LOG) {
-            val req = OperaXRequest.newInstance(json)
-            if (req.clazz.getAnnotation(NoLog::class.java) == null && req.method.getAnnotation(NoLog::class.java) == null)
-                OperaXLog.e("OPERA>>", json)
-            OperaXLog.flog("OPERA>>", json)
-        }
+        OperaXLog.inLog(json)
         OperaXRequest.newInstance(json).invoke(context) as? R
     }.getOrNull()
 
     @JvmStatic
     fun execute(webView: WebView, json: String): Any? = runCatching {
-        if (LOG) {
-            val req = OperaXRequest.newInstance(json)
-            if (req.clazz.getAnnotation(NoLog::class.java) == null && req.method.getAnnotation(NoLog::class.java) == null)
-                OperaXLog.e("OPERA>>", json)
-            OperaXLog.flog("OPERA>>", json)
-        }
+        OperaXLog.inLog(json)
         val req = OperaXRequest.newInstance(json)
         val result = req.invoke(webView)
         if (req.returnType === Void.TYPE)
@@ -92,22 +82,7 @@ object OperaXManager {
             }
             webView.evaluateJavascript(script, null)
         }
-
-        //log
-        if (LOG) {
-            runCatching {
-                "\\((.*)\\)\\((.*)\\);".toRegex().matchEntire(script)?.run {
-                    val success = JSONObject(groupValues[2]).getInt("resultCode") == 0
-                    val reqJson = JSONObject(groupValues[2]).getString("request")
-                    val req = OperaXRequest.newInstance(reqJson)
-                    if (success && req.clazz.getAnnotation(NoLog::class.java) == null && req.method.getAnnotation(NoLog::class.java) == null)
-                        OperaXLog.i("<<OPERA", groupValues[1], groupValues[2])
-                    else
-                        OperaXLog.w("<<OPERA", groupValues[1], groupValues[2])
-                    OperaXLog.flog("<<OPERA", groupValues[1], groupValues[2])
-                }
-            }
-        }
+        OperaXLog.outLog(script)
     }
 
     //RUNNING_EXTENSION/////////////////////////////////////////////////////////////////////////////////

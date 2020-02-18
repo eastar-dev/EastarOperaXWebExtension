@@ -11,6 +11,11 @@ import kotlin.experimental.and
 object OperaXLog {
     var LOG = false
     var FILE_LOG: File? = null
+    var _OUT_1 = false
+    var _OUT_2 = false
+    var _IN_1 = false
+    var _IN_2 = false
+
     private const val LF = "\n"
     private const val MAX_LOG_LINE_BYTE_SIZE = 3600
     private const val PREFIX = "``"
@@ -109,6 +114,44 @@ object OperaXLog {
         }
         toString()
     }.getOrDefault(text)
+
+    fun outLog(script: String) {
+        if (!LOG) return
+
+        runCatching {
+            "\\((.*)\\)\\((.*)\\);".toRegex().matchEntire(script)?.run {
+                flog("<<OPERA", groupValues[1], groupValues[2])
+
+                val jo = JSONObject(groupValues[2])
+                val success = jo.getInt("resultCode") == 0
+                val reqJson = jo.getString("request")
+                jo.remove("request")
+                if (success && _OUT_1)
+                    i("<<OPERA", success, "=" + jo.getString("result"))
+                else
+                    w("<<OPERA", success, "=" + jo.getString("result"))
+
+                if (success && _OUT_2) {
+                    val req = OperaXRequest.newInstance(reqJson)
+                    if (req.clazz.getAnnotation(NoLog::class.java) == null && req.method.getAnnotation(NoLog::class.java) == null)
+                        i("<<OPERA", groupValues[1], groupValues[2])
+                } else {
+                    w("<<OPERA", groupValues[1], groupValues[2])
+                }
+            }
+        }
+    }
+
+    fun inLog(json: String) {
+        if (!LOG) return
+        flog("OPERA>>", json)
+
+        if (_IN_1) {
+            val req = OperaXRequest.newInstance(json)
+            if (req.clazz.getAnnotation(NoLog::class.java) == null && req.method.getAnnotation(NoLog::class.java) == null)
+                e("OPERA>>", req.methodName, req.params.contentToString())
+        }
+    }
 }
 
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
