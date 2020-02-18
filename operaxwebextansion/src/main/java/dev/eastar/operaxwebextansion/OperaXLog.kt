@@ -117,11 +117,11 @@ object OperaXLog {
 
     fun inLog(json: String) {
         if (!LOG) return
-        flog("OPERA>>", json)
+        flog(">>OPERA", json)
         val req = OperaXRequest.newInstance(json)
         val log = req.clazz.getAnnotation(NoLog::class.java) == null && req.method.getAnnotation(NoLog::class.java) == null
-        if (log && _IN_1) e("OPERA>>", req.methodName, req.params.contentToString())
-        if (log && _IN_2) e("OPERA>>", json)
+        if (log && _IN_1) e(">>OPERA", req.methodName, req.params.contentToString())
+        if (log && _IN_2) e(">>OPERA", json)
     }
 
     fun outLog(script: String) {
@@ -151,7 +151,6 @@ object OperaXLog {
             }
         }
     }
-
 }
 
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
