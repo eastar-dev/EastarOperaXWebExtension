@@ -115,6 +115,15 @@ object OperaXLog {
         toString()
     }.getOrDefault(text)
 
+    fun inLog(json: String) {
+        if (!LOG) return
+        flog("OPERA>>", json)
+        val req = OperaXRequest.newInstance(json)
+        val log = req.clazz.getAnnotation(NoLog::class.java) == null && req.method.getAnnotation(NoLog::class.java) == null
+        if (log && _IN_2) e("OPERA>>", req.methodName, req.params.contentToString())
+        if (log && _IN_2) e("OPERA>>", json)
+    }
+
     fun outLog(script: String) {
         if (!LOG) return
 
@@ -125,33 +134,24 @@ object OperaXLog {
                 val jo = JSONObject(groupValues[2])
                 val success = jo.getInt("resultCode") == 0
                 val reqJson = jo.getString("request")
+                val req = OperaXRequest.newInstance(reqJson)
+                val log = req.clazz.getAnnotation(NoLog::class.java) == null && req.method.getAnnotation(NoLog::class.java) == null
                 jo.remove("request")
-                if (success && _OUT_1)
-                    i("<<OPERA", success, "=" + jo.getString("result"))
-                else
-                    w("<<OPERA", success, "=" + jo.getString("result"))
-
-                if (success && _OUT_2) {
-                    val req = OperaXRequest.newInstance(reqJson)
-                    if (req.clazz.getAnnotation(NoLog::class.java) == null && req.method.getAnnotation(NoLog::class.java) == null)
-                        i("<<OPERA", groupValues[1], groupValues[2])
+                if (success) {
+                    if (log && _OUT_1) i("<<OPERA", success, "=" + jo.getString("result"))
                 } else {
-                    w("<<OPERA", groupValues[1], groupValues[2])
+                    w("<<OPERA", success, "=" + jo.getString("result"))
+                }
+
+                if (success) {
+                    if (log && _OUT_2) i("<<OPERA", groupValues[1], groupValues[2])
+                } else {
+                    if (_OUT_2) w("<<OPERA", groupValues[1], groupValues[2])
                 }
             }
         }
     }
 
-    fun inLog(json: String) {
-        if (!LOG) return
-        flog("OPERA>>", json)
-
-        if (_IN_1) {
-            val req = OperaXRequest.newInstance(json)
-            if (req.clazz.getAnnotation(NoLog::class.java) == null && req.method.getAnnotation(NoLog::class.java) == null)
-                e("OPERA>>", req.methodName, req.params.contentToString())
-        }
-    }
 }
 
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
