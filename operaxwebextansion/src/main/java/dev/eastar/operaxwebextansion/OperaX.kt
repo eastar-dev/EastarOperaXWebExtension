@@ -34,11 +34,11 @@ abstract class OperaX {
     lateinit var req: OperaXRequest
     ///////////
 
-    @Deprecated
+    @Deprecated("instead to context")
     protected lateinit var mContext: Context//for extension
-    @Deprecated
+    @Deprecated("instead to activity")
     protected lateinit var mActivity: AppCompatActivity//for extension
-    @Deprecated
+    @Deprecated("instead to req")
     lateinit var mReq: OperaXRequest
 
     @Target(AnnotationTarget.FUNCTION)
