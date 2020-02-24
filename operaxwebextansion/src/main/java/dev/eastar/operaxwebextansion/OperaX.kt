@@ -31,8 +31,15 @@ abstract class OperaX {
     protected lateinit var context: Context//for extension
     protected lateinit var activity: AppCompatActivity//for extension
     protected lateinit var webView: WebView//for extension
-    ///////////
     lateinit var req: OperaXRequest
+    ///////////
+
+    @Deprecated
+    protected lateinit var mContext: Context//for extension
+    @Deprecated
+    protected lateinit var mActivity: AppCompatActivity//for extension
+    @Deprecated
+    lateinit var mReq: OperaXRequest
 
     @Target(AnnotationTarget.FUNCTION)
     @Retention(AnnotationRetention.RUNTIME)
@@ -46,9 +53,13 @@ abstract class OperaX {
 
     open fun initialize(context: Context, req: OperaXRequest): OperaX {
         this.context = context
-        if (context is AppCompatActivity)
+        this.mContext = context
+        if (context is AppCompatActivity) {
             activity = context
+            mActivity = context
+        }
         this.req = req
+        this.mReq = req
         return this
     }
 
