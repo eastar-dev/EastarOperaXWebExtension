@@ -120,7 +120,7 @@ object OperaXLog {
         flog(">>OPERA", json)
         val req = OperaXRequest.newInstance(json)
         val log = req.clazz.getAnnotation(NoLog::class.java) == null && req.method.getAnnotation(NoLog::class.java) == null
-        if (log && _IN_1) e(">>OPERA", "${req.methodName}:${req.params.contentToString()}")
+        if (log && _IN_1) e(">>OPERA", "${req.clazz}.${req.methodName}:${req.params.contentToString()}")
         if (log && _IN_2) e(">>OPERA", json)
     }
 
@@ -138,9 +138,9 @@ object OperaXLog {
                 val log = req.clazz.getAnnotation(NoLog::class.java) == null && req.method.getAnnotation(NoLog::class.java) == null
                 jo.remove("request")
                 if (success) {
-                    if (log && _OUT_1) i("<<OPERA", success, "${req.methodName}:${jo.getString("result")}")
+                    if (log && _OUT_1) i("<<OPERA", success, "${req.clazz}.${req.methodName}:${jo.getString("result")}")
                 } else {
-                    if (log && _OUT_1) w("<<OPERA", success, "${req.methodName}:${jo.getString("result")}")
+                    if (log && _OUT_1) w("<<OPERA", success, "${req.clazz}.${req.methodName}:${jo.getString("result")}")
                 }
 
                 if (success) {
