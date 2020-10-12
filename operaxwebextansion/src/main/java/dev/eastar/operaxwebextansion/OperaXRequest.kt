@@ -23,12 +23,11 @@ import org.json.JSONObject
 import java.lang.reflect.Method
 
 class OperaXRequest {
-
     lateinit var json: String
 
+    var returnType: Class<*>? = null
     lateinit var clazz: Class<out OperaX>
     lateinit var method: Method
-    var returnType: Class<*>? = null
     lateinit var methodName: String
 
     var params: Array<Any?> = emptyArray()
@@ -37,21 +36,23 @@ class OperaXRequest {
     var callback: String = DEFAULT_CALLBACK
 
     override fun toString(): String {
-        return "[$callback] ${method.returnType.simpleName} ${method.declaringClass.simpleName}::${method.name} ${params.contentToString()}"
+        val returnName = if (this::method.isInitialized) method.returnType.simpleName else "[NULL_RETURN]"
+        val methodName = if (this::method.isInitialized) method.declaringClass.simpleName + "::" + method.name else "[NULL_METHOD]"
+        return "[$callback] $returnName $methodName ${params.contentToString()}"
     }
 
     fun invoke(context: Context): Any? {
-        val extension = clazz.newInstance()
-        extension.initialize(context, this)
+        val clz = clazz.newInstance()
+        clz.initialize(context, this)
         val method = method
-        return method.invoke(extension, *params)
+        return method.invoke(clz, *params)
     }
 
     fun invoke(webView: WebView): Any? {
-        val extension = clazz.newInstance()
-        extension.initialize(webView, this)
+        val clz = clazz.newInstance()
+        clz.initialize(webView, this)
         val method = method
-        return method.invoke(extension, *params)
+        return method.invoke(clz, *params)
     }
 
     companion object {
@@ -62,30 +63,24 @@ class OperaXRequest {
         private const val REQUESTCODE = "requestcode"
         private const val DEFAULT_CALLBACK: String = "console.log"
 
-        fun errorInstance(json: String): OperaXRequest {
-            return OperaXRequest().apply {
-                this.json = json
-                this.callback = runCatching {
-                    JSONObject(json).optString(CALLBACK, DEFAULT_CALLBACK)
-                }.getOrDefault(DEFAULT_CALLBACK)
-            }
+        fun errorInstance(json: String) = OperaXRequest().apply {
+            this.json = json
+            this.callback = kotlin.runCatching {
+                JSONObject(json).optString(CALLBACK, DEFAULT_CALLBACK)
+            }.getOrDefault(DEFAULT_CALLBACK)
         }
 
         @Throws(ClassNotFoundException::class, JSONException::class)
-        fun newInstance(json: String): OperaXRequest {
-            val req = OperaXRequest()
-            req.json = json
-
+        fun newInstance(json: String) = OperaXRequest().apply {
+            this.json = json
             val jo = JSONObject(json)
-            req.callback = jo.optString(CALLBACK, DEFAULT_CALLBACK)
-            req.requestCode = jo.optInt(REQUESTCODE, -1)
-
-            req.clazz = getClazz(jo.optString(CLAZZ))
-            req.params = getParams(jo.optJSONArray(PARAMS))
-            req.method = getMethod(req.clazz, jo.optString(METHOD), req.params)
-            req.returnType = req.method.returnType
-            req.methodName = req.method.name
-            return req
+            callback = jo.optString(CALLBACK, DEFAULT_CALLBACK)
+            requestCode = jo.optInt(REQUESTCODE, -1)
+            clazz = getClazz(jo.optString(CLAZZ))
+            params = getParams(jo.optJSONArray(PARAMS))
+            method = getMethod(clazz, jo.optString(METHOD), params)
+            returnType = method.returnType
+            methodName = method.name
         }
 
         @Suppress("UNCHECKED_CAST")
@@ -102,8 +97,8 @@ class OperaXRequest {
         @Throws(JSONException::class)
         private fun getParams(param: JSONArray?): Array<Any?> {
             return arrayOfNulls<Any>(param?.length() ?: 0)
-                    .mapIndexed { index, _ -> param?.opt(index) }
-                    .toTypedArray()
+                .mapIndexed { index, _ -> param?.opt(index) }
+                .toTypedArray()
         }
 
         @Throws(NoSuchMethodException::class)

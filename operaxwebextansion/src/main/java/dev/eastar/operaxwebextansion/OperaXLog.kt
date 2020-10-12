@@ -118,10 +118,14 @@ object OperaXLog {
     fun inLog(json: String) {
         if (!LOG) return
         flog(">>OPERA", json)
-        val req = OperaXRequest.newInstance(json)
-        val log = req.clazz.getAnnotation(NoLog::class.java) == null && req.method.getAnnotation(NoLog::class.java) == null
-        if (log && _IN_1) e(">>OPERA", "${req.clazz}.${req.methodName}:${req.params.contentToString()}")
-        if (log && _IN_2) e(">>OPERA", json)
+        kotlin.runCatching {
+            val req = OperaXRequest.newInstance(json)
+            val log = req.clazz.getAnnotation(NoLog::class.java) == null && req.method.getAnnotation(NoLog::class.java) == null
+            if (log && _IN_1) e(">>OPERA", "${req.clazz}.${req.methodName}:${req.params.contentToString()}")
+            if (log && _IN_2) e(">>OPERA", json)
+        }.onFailure {
+            w(">>OPERA", json)
+        }
     }
 
     fun outLog(script: String) {
@@ -149,6 +153,8 @@ object OperaXLog {
                     w("<<OPERA", groupValues[1], groupValues[2])
                 }
             }
+        }.onFailure {
+            w("<<OPERA", script)
         }
     }
 }
